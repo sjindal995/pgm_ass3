@@ -1,0 +1,16 @@
+OCRdataset-2/potentials/ocr.dat
+0
+0
+0
+OCRdataset-2/data/data-tree.dat
+OCRdataset-2/out1.txt
+OCRdataset-2/data/truth-tree.dat
+
+OCRdataset-2/potentials/ocr.dat
+1
+OCRdataset-2/potentials/trans.dat
+1
+1
+OCRdataset-2/data/data-treeWS.dat
+OCRdataset-2/out1.txt
+OCRdataset-2/data/truth-treeWS.dat
