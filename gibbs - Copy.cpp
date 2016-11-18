@@ -16,7 +16,7 @@ int n_nodes;
 
 int dict_size=10;
 int burn_in_thresh=1000;
-int max_iter = 10000;
+int max_iter = 100000;
 
 void createEdges(){
 	int imgs1_len = imgs1.size();
@@ -137,103 +137,47 @@ double getProb(string conf, int query){
 		}
 		else{
 			for(int j=0;j<imgs1.size();j++){
-				if((imgs2.at(query-imgs1.size()) == imgs1.at(j)) && (conf[j] == conf[query])) ans *= 5.0;
+				if((imgs2.at(query-imgs1.size())) == (imgs1.at(j) && conf[j] == conf[query])) ans *= 5.0;
 			}	
 		}
 	}
 	return ans;
 }
 
-vector<double> normalizeVec(vector<double> probs){
-	double sum=0;
-	for(int i=0;i<probs.size();i++){
-		sum += probs.at(i);
-	}
-	vector<double> norm_probs;
-	for(int i=0;i<probs.size();i++){
-		norm_probs.push_back(probs.at(i)/float(sum));
-	}
-	return norm_probs;
-}
-
-int getIndex(vector<double> probs, double r){
-	double sum =0;
-	for(int i=0;i<probs.size();i++){
-		sum += probs.at(i);
-		if(r <= sum) return i;
-	}
-	return probs.size()-1;
-}
-
 string getGibbsResult(){
 	int t=0;
 	bool burn_in_over = false;
-	vector<string> samples;
 	string sample="";
 	for(int i=0;i<n_nodes;i++){
 		sample.push_back(rand()%10 + 48);
 	}
-	samples.push_back(sample);
 	while(!burn_in_over || n_nodes*t<=max_iter){
 		t++;
-		string tmp = samples.back();
 		for(int i=0;i<n_nodes;i++){
+			string tmp = sample;
 			double max_prob=-1;
 			string best_conf = "";
-			vector<double> probs;
 			for(int j=0;j<dict_size;j++){
 				tmp[i]=j+48;
 				double cur_prob = getProb(tmp, i);
-				probs.push_back(cur_prob);
 				// cout << "tmp : " << tmp << ", query: " << i << ", cur_prob : "<< cur_prob << endl;;
-				// if(cur_prob > max_prob){
-				// 	max_prob = cur_prob;
-				// 	best_conf = tmp;
-				// }
+				if(cur_prob > max_prob){
+					max_prob = cur_prob;
+					best_conf = tmp;
+				}
 			}
-			vector<double> norm_probs = normalizeVec(probs);
-			double r = (rand()%100)/100.0;
-			// cout << r << endl;
-			tmp[i] = 48 + getIndex(norm_probs,r);
-		}
-		if(burn_in_over){
-			samples.push_back(tmp);
+			if(burn_in_over){
+				sample[i]=best_conf[i];
+			}
 		}
 		if(!burn_in_over){
-			samples.pop_back();
-			samples.push_back(tmp);
 			if(n_nodes*t >= burn_in_thresh){
 				burn_in_over=true;
 				t=1;
 			}
 		}
 	}
-	int** count = new int*[n_nodes];
-	for(int i=0;i<n_nodes;i++){
-		count[i] = new int[dict_size];
-		for(int j=0;j<dict_size;j++){
-			count[i][j]=0;
-		}
-	}
-	for(int i=0;i<samples.size();i++){
-		string cur_sample = samples.at(i);
-		for(int j=0;j<n_nodes;j++){
-			count[j][cur_sample[j]-48]++;
-		}
-	}
-	string final = "";
-	for(int i=0;i<n_nodes;i++){
-		int cur_max=-1;
-		int cur_max_ind=-1;
-		for(int j=0;j<dict_size;j++){
-			if(count[i][j]>=cur_max){
-				cur_max = count[i][j];
-				cur_max_ind = j;
-			}
-		}
-		final.push_back(cur_max_ind+48);
-	}
-	return final;
+	return sample;
 }
 
 double getCharAcc(string output_filepath, string words_filepath){
@@ -275,7 +219,6 @@ double getWordAcc(string output_filepath, string words_filepath){
 }
 
 int main(){
-	srand(time(NULL));
 	char2index['e']	= 0;
 	char2index['t']	= 1;
 	char2index['a']	= 2;
